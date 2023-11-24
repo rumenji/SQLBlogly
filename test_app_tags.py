@@ -16,56 +16,63 @@ with app.app_context():
     db.drop_all()
     db.create_all()
 
-class UserModelTestCase(TestCase):
+
+
+
+# Test posts
+
+class TagModelTestCase(TestCase):
 
     def setUp(self):
-        """Clear any existing users"""
+        """Clear any existing posts"""
         with app.app_context():
+            Post.query.delete()
             User.query.delete()
+            Tag.query.delete()
             user = User(first_name="Test", last_name="User", image_url="http://google.com")
             db.session.add(user)
+
+            post = Post(title='Post Title', content='Test post content', user=user)
+            db.session.add(post)
+
+            tag = Tag(name='Dogs')
+            db.session.add(tag)
+
             db.session.commit()
 
-            self.user_id = user.id
+            self.tag_id = tag.id
+            print(self.tag_id)
 
     def tearDown(self):
         """Rollback any not commited transactions"""
         with app.app_context():
             db.session.rollback()
 
-    def test_list_users(self):
+
+    def test_new_tag(self):
         with app.test_client() as client:
-            resp = client.get("/users")
+            t = {"name": "Fun"}
+            resp = client.post(f"/tags/new", data=t, follow_redirects=True)
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('Test', html)
+            self.assertIn("Fun", html)
 
-    def show_user(self):
-        with app.test_client() as client:
-            resp = client.get(f"/{self.user_id}")
-            html = resp.get_data(as_text=True)
-
-            self.assertEqual(resp.status_code, 200)
-            self.assertIn('<h1>Test User</h1>', html)
-
-    def test_new_user(self):
-        with app.test_client() as client:
-            u = {"first-name": "John", "last-name": "Doe", "image-url": "http://google.com"}
-            resp = client.post("/users/new", data=u, follow_redirects=True)
-            html = resp.get_data(as_text=True)
-
-            self.assertEqual(resp.status_code, 200)
-            self.assertIn("John Doe", html)
-
-    def test_delete_user(self):
+    def test_list_tags(self):
         with app.test_client() as client:
             
-            resp = client.post(f"/users/{self.user_id}/delete", follow_redirects=True)
+            resp = client.get("/tags")
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertNotIn("Test User", html)
+            self.assertIn('Dogs', html)
 
+    def test_delete_tags(self):
+        with app.test_client() as client:
+            
+            resp = client.post(f"/tags/{self.tag_id}/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
 
-
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn("Dogs", html)
+        

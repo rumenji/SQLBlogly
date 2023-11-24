@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}New user{% endblock %}
 {% block content %}
-<div class="container">
+
     <h1>Create a user</h1>
     <form action="/users/new" method="POST">
         <label for="first-name">First Name</label>
@@ -12,7 +12,7 @@
         <input id="image-url" class="form-control col-sm-6" name="image-url" placeholder="Provide an image of this user">
         <button type="submit" class="btn btn-success ml-auto mr-3">Add</button>
     </form>
-</div>
+
 
 
 {% endblock %}
